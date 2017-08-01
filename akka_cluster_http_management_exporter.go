@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -59,6 +60,20 @@ var (
 		2: newServerMetric("current_members", "Current number of members of the akka cluster.", nil),
 	}
 )
+
+type Node struct {
+	node    string
+	nodeUid string
+	status  string
+	roles   []string
+}
+
+type Cluster struct {
+	selfNode    string
+	leader      string
+	oldest      string
+	unreachable []Node
+}
 
 // Exporter collects Akka Cluster HTTP stats from the given URI and exports them using
 // the prometheus metrics package.
@@ -147,9 +162,18 @@ func (e *Exporter) scrape() {
 	defer body.Close()
 	e.up.Set(1)
 
-	if _, err := ioutil.ReadAll(body); err == nil {
-		fmt.Fprintln(os.Stdout, body)
-		//		reader := json.NewDecoder(strings.NewReader(string(b)))
+	var m Cluster
+
+	for {
+		if b, err := ioutil.ReadAll(body); err == nil {
+			reader := json.NewDecoder(strings.NewReader(string(b)))
+			if err := reader.Decode(&m); err == io.EOF {
+				break
+			} else if err != nil {
+				log.Fatal(err)
+			}
+		}
+		fmt.Printf("%s", m.leader)
 	}
 }
 

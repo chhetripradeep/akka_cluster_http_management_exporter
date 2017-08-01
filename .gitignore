@@ -1,0 +1,7 @@
+.build
+bin/akka_cluster_http_management_exporter
+akka_cluster_http_management_exporter
+*.tar.gz
+*.test
+*.mprof
+*-stamp
