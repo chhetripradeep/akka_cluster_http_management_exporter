@@ -1,0 +1,22 @@
+{
+	"selfNode": "akka.tcp://AccountService@trading-account-3:2551",
+	"leader": "akka.tcp://AccountService@trading-account-1:2551",
+	"oldest": "akka.tcp://AccountService@trading-account-1:2551",
+	"unreachable": [],
+	"members": [{
+		"node": "akka.tcp://AccountService@trading-account-1:2551",
+		"nodeUid": "1107177422",
+		"status": "Up",
+		"roles": []
+	}, {
+		"node": "akka.tcp://AccountService@trading-account-2:2551",
+		"nodeUid": "-513206306",
+		"status": "Up",
+		"roles": []
+	}, {
+		"node": "akka.tcp://AccountService@trading-account-3:2551",
+		"nodeUid": "-2066915438",
+		"status": "Up",
+		"roles": []
+	}]
+}

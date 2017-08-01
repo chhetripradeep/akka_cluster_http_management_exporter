@@ -1,0 +1,10 @@
+repository:
+    path: github.com/chhetripradeep/akka_cluster_http_management_exporter
+build:
+    flags: -a -tags netgo
+    ldflags: |
+        -X {{repoPath}}/vendor/github.com/prometheus/common/version.Version={{.Version}}
+        -X {{repoPath}}/vendor/github.com/prometheus/common/version.Revision={{.Revision}}
+        -X {{repoPath}}/vendor/github.com/prometheus/common/version.Branch={{.Branch}}
+        -X {{repoPath}}/vendor/github.com/prometheus/common/version.BuildUser={{user}}@{{host}}
+        -X {{repoPath}}/vendor/github.com/prometheus/common/version.BuildDate={{date "20170101-15:04:05"}}
