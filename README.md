@@ -1,7 +1,7 @@
 # Akka Cluster HTTP Management Exporter for Prometheus
 
-This is a simple server that scrapes Akka HTTP Management stats and exports them via HTTP for
-Prometheus consumption.
+This is a simple server that scrapes [Akka HTTP Management Membership Stats](http://developer.lightbend.com/docs/akka-management/current/cluster-http-management.html) and exports them via HTTP for
+Prometheus consumption. This is useful to detect Split Brain situations.
 
 ## Getting Started
 
