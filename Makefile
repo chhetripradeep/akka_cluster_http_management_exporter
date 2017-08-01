@@ -20,7 +20,7 @@ BIN_DIR                 ?= $(shell pwd)
 DOCKER_IMAGE_NAME       ?= akka-cluster-http-manager-exporter
 DOCKER_IMAGE_TAG        ?= $(subst /,-,$(shell git rev-parse --abbrev-ref HEAD))
 
-all: format build test
+all: format build
 
 test:
 	@echo ">> running tests"

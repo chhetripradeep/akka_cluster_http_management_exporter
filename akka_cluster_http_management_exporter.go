@@ -25,14 +25,14 @@ const (
 )
 
 var (
-	serverLabelNames = []string{"trading"}
+	serverLabelNames = []string{"status"}
 )
 
 func newServerMetric(metricName string, docString string, constLabels prometheus.Labels) *prometheus.GaugeVec {
 	return prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace:   namespace,
-			Name:        "akka_" + metricName,
+			Name:        metricName,
 			Help:        docString,
 			ConstLabels: constLabels,
 		},
@@ -61,18 +61,19 @@ var (
 	}
 )
 
-type Node struct {
-	node    string
-	nodeUid string
-	status  string
-	roles   []string
+type ClusterNode struct {
+	Node    string
+	NodeUid string
+	Status  string
+	Roles   []string
 }
 
 type Cluster struct {
-	selfNode    string
-	leader      string
-	oldest      string
-	unreachable []Node
+	SelfNode    string
+	Leader      string
+	Oldest      string
+	Unreachable []ClusterNode
+	Members     []ClusterNode
 }
 
 // Exporter collects Akka Cluster HTTP stats from the given URI and exports them using
@@ -164,16 +165,43 @@ func (e *Exporter) scrape() {
 
 	var m Cluster
 
-	for {
-		if b, err := ioutil.ReadAll(body); err == nil {
-			reader := json.NewDecoder(strings.NewReader(string(b)))
-			if err := reader.Decode(&m); err == io.EOF {
-				break
-			} else if err != nil {
-				log.Fatal(err)
-			}
+	if b, err := ioutil.ReadAll(body); err == nil {
+		err = json.Unmarshal(b, &m)
+		if err != nil {
+			fmt.Println("error:", err)
 		}
-		fmt.Printf("%s", m.leader)
+		e.exportJsonFields(e.serverMetrics, m.Members)
+	}
+}
+
+// Expose Cluster Membership related metrics
+// Akka Cluster Node States are referenced from here:
+// 	http://doc.akka.io/docs/akka/2.5.3/images/member-states.png
+func (e *Exporter) exportJsonFields(metrics map[int]*prometheus.GaugeVec, members []ClusterNode) {
+	var joining, up, leaving, exiting, removed, down int
+	for _, n := range members {
+		switch n.Status {
+		case "Up":
+			up += 1
+		case "Down":
+			down += 1
+		case "Joining":
+			joining += 1
+		case "Leaving":
+			leaving += 1
+		case "Exiting":
+			exiting += 1
+		case "Removed":
+			removed += 1
+		}
+	}
+	for _, metric := range metrics {
+		metric.WithLabelValues("Up").Set(float64(up))
+		metric.WithLabelValues("Down").Set(float64(down))
+		metric.WithLabelValues("Joining").Set(float64(joining))
+		metric.WithLabelValues("Leaving").Set(float64(leaving))
+		metric.WithLabelValues("Exiting").Set(float64(exiting))
+		metric.WithLabelValues("Removed").Set(float64(removed))
 	}
 }
 
